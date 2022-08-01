@@ -1,0 +1,413 @@
+pg_up == 0
+time() - pg_postmaster_start_time_seconds < 60
+pg_exporter_last_scrape_error > 0
+pg_replication_lag > 30 and ON(instance) pg_replication_is_replica == 1
+(pg_stat_user_tables_last_autovacuum > 0) and (time() - pg_stat_user_tables_last_autovacuum) > 60 * 60 * 24 * 10
+(pg_stat_user_tables_last_autoanalyze > 0) and (time() - pg_stat_user_tables_last_autoanalyze) > 24 * 60 * 60 * 10
+sum by (datname) (pg_stat_activity_count{datname!~"template.*|postgres"}) > pg_settings_max_connections * 0.8
+sum by (datname) (pg_stat_activity_count{datname!~"template.*|postgres"}) < 5
+increase(pg_stat_database_deadlocks{datname!~"template.*|postgres"}[1m]) > 5
+rate(pg_stat_database_xact_rollback{datname!~"template.*"}[3m]) / rate(pg_stat_database_xact_commit{datname!~"template.*"}[3m]) > 0.02
+rate(pg_stat_database_xact_commit[1m]) < 10
+rate(pg_txid_current[1m]) < 5
+rate(postgresql_errors_total{type="statement_timeout"}[1m]) > 3
+increase(postgresql_errors_total{type="deadlock_detected"}[1m]) > 1
+pg_replication_slots_active == 0
+((pg_stat_user_tables_n_dead_tup > 10000) / (pg_stat_user_tables_n_live_tup + pg_stat_user_tables_n_dead_tup)) >= 0.1 unless ON(instance) (pg_replication_is_replica == 1)
+count(pg_replication_is_replica == 0) != 1
+pg_replication_is_replica and changes(pg_replication_is_replica[1m]) > 0
+{__name__=~"pg_settings_.*"} != ON(__name__) {__name__=~"pg_settings_([^t]|t[^r]|tr[^a]|tra[^n]|tran[^s]|trans[^a]|transa[^c]|transac[^t]|transact[^i]|transacti[^o]|transactio[^n]|transaction[^_]|transaction_[^r]|transaction_r[^e]|transaction_re[^a]|transaction_rea[^d]|transaction_read[^_]|transaction_read_[^o]|transaction_read_o[^n]|transaction_read_on[^l]|transaction_read_onl[^y]).*"} OFFSET 5m
+sum(pg_stat_ssl_compression) > 0
+((sum (pg_locks_count)) / (pg_settings_max_locks_per_transaction * pg_settings_max_connections)) > 0.20
+pg_bloat_btree_bloat_pct > 80 and on (idxname) (pg_bloat_btree_real_size > 100000000)
+pg_bloat_table_bloat_pct > 80 and on (relname) (pg_bloat_table_real_size > 200000000)
+changes(process_start_time_seconds{job=~"loki"}[15m]) > 2
+100 * sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[1m])) by (namespace, job, route) / sum(rate(loki_request_duration_seconds_count[1m])) by (namespace, job, route) > 10
+sum(increase(loki_panic_total[10m])) by (namespace, job) > 0
+(histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~"(?i).*tail.*"}[5m])) by (le)))  > 1
+cortex_ruler_config_last_reload_successful != 1
+cortex_prometheus_notifications_alertmanagers_discovered < 1
+rate(cortex_prometheus_notifications_dropped_total[5m]) > 0
+rate(cortex_prometheus_notifications_errors_total[5m]) > 0
+cortex_ring_members{state="Unhealthy", name="ingester"} > 0
+sum by (job) (cortex_query_frontend_queue_length) > 0
+ssl_probe_success == 0
+ssl_ocsp_response_status == 2
+ssl_ocsp_response_status == 1
+ssl_verified_cert_not_after{chain_no="0"} - time() < 86400 * 7
+vault_core_unsealed == 0
+avg(vault_token_create_count - vault_token_store_count) > 0
+vault_token_count_by_ttl{creation_ttl="+Inf"} > 3
+rate(netdata_cpu_cpu_percentage_average{dimension="idle"}[1m]) > 80
+rate(netdata_cpu_cpu_percentage_average{dimension="steal"}[1m]) > 10
+100 / netdata_system_ram_MB_average * netdata_system_ram_MB_average{dimension=~"free|cached"} < 20
+100 / netdata_disk_space_GB_average * netdata_disk_space_GB_average{dimension=~"avail|cached"} < 20
+predict_linear(netdata_disk_space_GB_average{dimension=~"avail|cached"}[3h], 24 * 3600) < 0
+netdata_md_mismatch_cnt_unsynchronized_blocks_average > 1024
+increase(netdata_smartd_log_reallocated_sectors_count_sectors_average[1m]) > 0
+netdata_smartd_log_current_pending_sector_count_sectors_average > 0
+increase(netdata_smartd_log_offline_uncorrectable_sector_count_sectors_average[2m]) > 0
+avg_over_time(speedtest_download[10m]) < 100
+avg_over_time(speedtest_upload[10m]) < 20
+sum(phpfpm_max_children_reached_total) by (instance) > 0
+sidekiq_queue_size > 100
+max(sidekiq_queue_latency) > 60
+freeswitch_up == 0
+(freeswitch_session_active * 100 / freeswitch_session_limit) > 80
+(freeswitch_session_active * 100 / freeswitch_session_limit) > 90
+min(kube_deployment_status_replicas_available{deployment="istio-ingressgateway", namespace="istio-system"}) without (instance, pod) < 2
+sum(rate(pilot_xds_push_errors[1m])) / sum(rate(pilot_xds_pushes[1m])) * 100 > 5
+sum(rate(mixer_runtime_dispatches_total{adapter=~"prometheus"}[1m])) < 180
+sum(rate(istio_requests_total{reporter="destination"}[5m])) > 1000
+sum(rate(istio_requests_total{reporter="destination"}[5m])) < 100
+sum(rate(istio_requests_total{reporter="destination", response_code=~"4.*"}[5m])) / sum(rate(istio_requests_total{reporter="destination"}[5m])) * 100 > 5
+sum(rate(istio_requests_total{reporter="destination", response_code=~"5.*"}[5m])) / sum(rate(istio_requests_total{reporter="destination"}[5m])) * 100 > 5
+rate(istio_request_duration_milliseconds_sum{reporter="destination"}[1m]) / rate(istio_request_duration_milliseconds_count{reporter="destination"}[1m]) > 100
+histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket[1m])) by (destination_canonical_service, destination_workload_namespace, source_canonical_service, source_workload_namespace, le)) > 1
+sum(rate(pilot_duplicate_envoy_clusters{}[5m])) > 0
+redis_up == 0
+(count(redis_instance_info{role="master"}) or vector(0)) < 1
+count(redis_instance_info{role="master"}) > 1
+count without (instance, job) (redis_connected_slaves) - sum without (instance, job) (redis_connected_slaves) - 1 > 1
+delta(redis_connected_slaves[1m]) < 0
+changes(redis_connected_slaves[1m]) > 1
+time() - redis_rdb_last_save_timestamp_seconds > 60 * 60 * 24
+redis_memory_used_bytes / redis_total_system_memory_bytes * 100 > 90
+redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+redis_connected_clients > 100
+redis_connected_clients < 5
+increase(redis_rejected_connections_total[1m]) > 0
+ceph_health_status != 0
+abs(ceph_monitor_clock_skew_seconds) > 0.2
+ceph_monitor_avail_percent < 10
+ceph_osd_up == 0
+ceph_osd_perf_apply_latency_seconds > 5
+ceph_osd_utilization > 90
+ceph_osd_weight < 1
+ceph_pg_down > 0
+ceph_pg_incomplete > 0
+ceph_pg_inconsistent > 0
+ceph_pg_activating > 0
+ceph_pg_backfill_toofull > 0
+ceph_pg_total - ceph_pg_active > 0
+openebs_used_pool_capacity_percent > 80
+absent(up{job="prometheus"})
+up == 0
+sum by (job) (up) == 0
+prometheus_config_last_reload_successful != 1
+changes(process_start_time_seconds{job=~"prometheus|pushgateway|alertmanager"}[15m]) > 2
+absent(up{job="alertmanager"})
+alertmanager_config_last_reload_successful != 1
+count(count_values("config_hash", alertmanager_config_hash)) > 1
+vector(1)
+prometheus_notifications_alertmanagers_discovered < 1
+increase(prometheus_rule_evaluation_failures_total[3m]) > 0
+increase(prometheus_template_text_expansion_failures_total[3m]) > 0
+prometheus_rule_group_last_duration_seconds > prometheus_rule_group_interval_seconds
+min_over_time(prometheus_notifications_queue_length[10m]) > 0
+rate(alertmanager_notifications_failed_total[1m]) > 0
+prometheus_sd_discovered_targets == 0
+prometheus_target_interval_length_seconds{quantile="0.9"} / on (interval, instance, job) prometheus_target_interval_length_seconds{quantile="0.5"} > 1.05
+increase(prometheus_target_scrapes_exceeded_sample_limit_total[10m]) > 10
+increase(prometheus_target_scrapes_sample_duplicate_timestamp_total[5m]) > 0
+increase(prometheus_tsdb_checkpoint_creations_failed_total[1m]) > 0
+increase(prometheus_tsdb_checkpoint_deletions_failed_total[1m]) > 0
+increase(prometheus_tsdb_compactions_failed_total[1m]) > 0
+increase(prometheus_tsdb_head_truncations_failed_total[1m]) > 0
+increase(prometheus_tsdb_reloads_failures_total[1m]) > 0
+increase(prometheus_tsdb_wal_corruptions_total[1m]) > 0
+increase(prometheus_tsdb_wal_truncations_failed_total[1m]) > 0
+probe_success == 0
+blackbox_exporter_config_last_reload_successful != 1
+avg_over_time(probe_duration_seconds[1m]) > 1
+probe_http_status_code <= 199 OR probe_http_status_code >= 400
+probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+probe_ssl_earliest_cert_expiry - time() < 86400 * 3
+probe_ssl_earliest_cert_expiry - time() <= 0
+avg_over_time(probe_http_duration_seconds[1m]) > 1
+avg_over_time(probe_icmp_duration_seconds[1m]) > 1
+(sum by (instance)(jvm_memory_used_bytes{area="heap"}) / sum by (instance)(jvm_memory_max_bytes{area="heap"})) * 100 > 80
+100 * sum(rate(promtail_request_duration_seconds_count{status_code=~"5..|failed"}[1m])) by (namespace, job, route, instance) / sum(rate(promtail_request_duration_seconds_count[1m])) by (namespace, job, route, instance) > 10
+histogram_quantile(0.99, sum(rate(promtail_request_duration_seconds_bucket[5m])) by (le)) > 1
+rabbitmq_up == 0
+sum(rabbitmq_running) < 3
+rabbitmq_partitions > 0
+rabbitmq_node_mem_used / rabbitmq_node_mem_limit * 100 > 90
+rabbitmq_connectionsTotal > 1000
+rabbitmq_queue_messages{queue="my-dead-letter-queue"} > 10
+rabbitmq_queue_messages_ready{queue="my-queue"} > 1000
+time() - rabbitmq_queue_head_message_timestamp{queue="my-queue"} > 60
+rabbitmq_queue_consumers == 0
+rabbitmq_queue_consumers{queue="my-queue"} > 1
+rate(rabbitmq_exchange_messages_published_in_total{exchange="my-exchange"}[1m]) < 5
+sum(rabbitmq_build_info) < 3
+erlang_vm_dist_node_state < 3
+count(count(rabbitmq_build_info) by (rabbitmq_version)) > 1
+rabbitmq_process_resident_memory_bytes / rabbitmq_resident_memory_limit_bytes * 100 > 90
+rabbitmq_process_open_fds / rabbitmq_process_max_fds * 100 > 90
+sum(rabbitmq_queue_messages_unacked) BY (queue) > 1000
+rabbitmq_connections > 1000
+rabbitmq_queue_consumers < 1
+increase(rabbitmq_channel_messages_unroutable_returned_total[1m]) > 0 or increase(rabbitmq_channel_messages_unroutable_dropped_total[1m]) > 0
+minio_disks_offline > 0
+disk_storage_available / disk_storage_total * 100 < 10
+changes(mgob_scheduler_backup_total{status="500"}[1h]) > 0
+avg(mongodb_replset_member_optime_date{state="PRIMARY"}) - avg(mongodb_replset_member_optime_date{state="SECONDARY"}) > 10
+mongodb_replset_member_state == 3
+mongodb_replset_member_state == 6
+mongodb_replset_member_state == 8
+mongodb_replset_member_state == 9
+mongodb_replset_member_state == 10
+mongodb_metrics_cursor_open{state="total_open"} > 10000
+increase(mongodb_metrics_cursor_timed_out_total[1m]) > 100
+avg by(instance) (rate(mongodb_connections{state="current"}[1m])) / avg by(instance) (sum (mongodb_connections) by (instance)) * 100 > 80
+(sum(mongodb_memory{type="virtual"}) BY (instance) / sum(mongodb_memory{type="mapped"}) BY (instance)) > 3
+mongodb_up == 0
+mongodb_rs_members_health == 0
+mongodb_rs_members_optimeDate{member_state="PRIMARY"} - on (set) group_right mongodb_rs_members_optimeDate{member_state="SECONDARY"} > 10
+sum(avg(mongodb_oplog_stats_start - mongodb_oplog_stats_end)) - sum(avg(mongodb_rs_members_optimeDate{member_state="PRIMARY"} - on (set) group_right mongodb_rs_members_optimeDate{member_state="SECONDARY"})) <= 0
+mongodb_ss_metrics_cursor_open{csr_type="total"} > 10 * 1000
+increase(mongodb_ss_metrics_cursor_timedOut[1m]) > 100
+avg by(instance) (rate(mongodb_ss_connections{conn_type="current"}[1m])) / avg by(instance) (sum (mongodb_ss_connections) by (instance)) * 100 > 80
+(sum(mongodb_ss_mem_virtual) BY (instance) / sum(mongodb_ss_mem_resident) BY (instance)) > 3
+zk_up == 0
+sum(zk_server_leader) == 0
+sum(zk_server_leader) > 1
+zk_ruok == 0
+increase(solr_metrics_core_update_handler_errors_total[1m]) > 1
+increase(solr_metrics_core_errors_total{category="QUERY"}[1m]) > 1
+increase(solr_metrics_core_errors_total{category="REPLICATION"}[1m]) > 1
+solr_collections_live_nodes < 2
+node_zfs_zpool_state{state!="online"} > 0
+nomad_nomad_job_summary_failed > 0
+nomad_nomad_job_summary_lost > 0
+nomad_nomad_job_summary_queued > 0
+nomad_nomad_blocked_evals_total_blocked > 0
+consul_catalog_service_node_healthy == 0
+consul_raft_peers < 3
+consul_health_node_status{status="critical"} == 1
+mssql_up == 0
+increase(mssql_deadlocks[1m]) > 5
+sum(rate(nginx_http_requests_total{status=~"^4.."}[1m])) / sum(rate(nginx_http_requests_total[1m])) * 100 > 5
+sum(rate(nginx_http_requests_total{status=~"^5.."}[1m])) / sum(rate(nginx_http_requests_total[1m])) * 100 > 5
+histogram_quantile(0.99, sum(rate(nginx_http_request_duration_seconds_bucket[2m])) by (host, node)) > 3
+delta(kafka_burrow_partition_current_offset[1m]) < 0
+kafka_burrow_topic_partition_offset - on(partition, cluster, topic) group_right() kafka_burrow_partition_current_offset >= (kafka_burrow_topic_partition_offset offset 15m - on(partition, cluster, topic) group_right() kafka_burrow_partition_current_offset offset 15m) AND kafka_burrow_topic_partition_offset - on(partition, cluster, topic) group_right() kafka_burrow_partition_current_offset > 0
+sum(kafka_topic_partition_in_sync_replica) by (topic) < 3
+sum(kafka_consumergroup_lag) by (consumergroup) > 50
+sum(rate(request_errors_total[1m])) by (deployment, statefulset, daemonset) / sum(rate(request_total[1m])) by (deployment, statefulset, daemonset) * 100 > 10
+changes(cassandra_stats{name="org:apache:cassandra:metrics:storage:totalhints:count"}[1m]) > 3
+avg_over_time(cassandra_stats{name="org:apache:cassandra:metrics:compaction:pendingtasks:value"}[1m]) > 100
+cassandra_stats{name="org:apache:cassandra:metrics:clientrequest:viewwrite:viewwritelatency:99thpercentile",service="cas"} > 100000
+rate(cassandra_stats{name="org:apache:cassandra:metrics:client:authfailure:count"}[1m]) > 5
+sum(cassandra_stats{name="org:apache:cassandra:net:failuredetector:downendpointcount"}) by (service,group,cluster,env) > 0
+cassandra_stats{name="org:apache:cassandra:metrics:commitlog:pendingtasks:value"} > 15
+cassandra_stats{name="org:apache:cassandra:metrics:threadpools:internal:compactionexecutor:currentlyblockedtasks:count"} > 0
+cassandra_stats{name="org:apache:cassandra:metrics:threadpools:internal:memtableflushwriter:currentlyblockedtasks:count"} > 0
+cassandra_stats{name="org:apache:cassandra:metrics:threadpools:internal:antientropystage:pendingtasks:value"} > 2
+cassandra_stats{name="org:apache:cassandra:metrics:threadpools:internal:antientropystage:currentlyblockedtasks:count"} > 0
+rate(cassandra_stats{name="org:apache:cassandra:metrics:connection:totaltimeouts:count"}[1m]) > 5
+changes(cassandra_stats{name="org:apache:cassandra:metrics:storage:exceptions:count"}[1m]) > 1
+cassandra_stats{name="org:apache:cassandra:metrics:table:tombstonescannedhistogram:99thpercentile"} > 1000
+changes(cassandra_stats{name="org:apache:cassandra:metrics:clientrequest:write:unavailables:count"}[1m]) > 0
+changes(cassandra_stats{name="org:apache:cassandra:metrics:clientrequest:read:unavailables:count"}[1m]) > 0
+increase(cassandra_stats{name="org:apache:cassandra:metrics:clientrequest:write:failures:oneminuterate"}[1m]) > 0
+increase(cassandra_stats{name="org:apache:cassandra:metrics:clientrequest:read:failures:oneminuterate"}[1m]) > 0
+cassandra_stats{name="org:apache:cassandra:metrics:cache:keycache:hitrate:value"} < .85
+sum(cassandra_endpoint_active) by (cassandra_cluster,instance,exported_endpoint) < 1
+cassandra_table_estimated_pending_compactions > 100
+cassandra_commit_log_pending_tasks > 15
+cassandra_thread_pool_blocked_tasks{pool="CompactionExecutor"} > 15
+cassandra_thread_pool_blocked_tasks{pool="MemtableFlushWriter"} > 15
+avg(cassandra_client_request_timeouts_total) by (cassandra_cluster,instance) > 5
+changes(cassandra_storage_exceptions_total[1m]) > 1
+avg(cassandra_table_tombstones_scanned{quantile="0.99"}) by (instance,cassandra_cluster,keyspace) > 100
+changes(cassandra_client_request_unavailable_exceptions_total{operation="write"}[1m]) > 0
+changes(cassandra_client_request_unavailable_exceptions_total{operation="read"}[1m]) > 0
+increase(cassandra_client_request_failures_total{operation="write"}[1m]) > 0
+increase(cassandra_client_request_failures_total{operation="read"}[1m]) > 0
+mysql_up == 0
+max_over_time(mysql_global_status_threads_connected[1m]) / mysql_global_variables_max_connections * 100 > 80
+max_over_time(mysql_global_status_threads_running[1m]) / mysql_global_variables_max_connections * 100 > 60
+mysql_slave_status_master_server_id > 0 and ON (instance) mysql_slave_status_slave_io_running == 0
+mysql_slave_status_master_server_id > 0 and ON (instance) mysql_slave_status_slave_sql_running == 0
+mysql_slave_status_master_server_id > 0 and ON (instance) (mysql_slave_status_seconds_behind_master - mysql_slave_status_sql_delay) > 30
+increase(mysql_global_status_slow_queries[1m]) > 0
+rate(mysql_global_status_innodb_log_waits[15m]) > 10
+mysql_global_status_uptime < 60
+junos_up == 0
+rate(junos_interface_transmit_bytes[1m]) * 8 > 1e+9 * 0.90
+rate(junos_interface_transmit_bytes[1m]) * 8 > 1e+9 * 0.80
+count(etcd_server_id) % 2 == 0
+etcd_server_has_leader == 0
+increase(etcd_server_leader_changes_seen_total[10m]) > 2
+sum(rate(grpc_server_handled_total{grpc_code!="OK"}[1m])) BY (grpc_service, grpc_method) / sum(rate(grpc_server_handled_total[1m])) BY (grpc_service, grpc_method) > 0.01
+sum(rate(grpc_server_handled_total{grpc_code!="OK"}[1m])) BY (grpc_service, grpc_method) / sum(rate(grpc_server_handled_total[1m])) BY (grpc_service, grpc_method) > 0.05
+histogram_quantile(0.99, sum(rate(grpc_server_handling_seconds_bucket{grpc_type="unary"}[1m])) by (grpc_service, grpc_method, le)) > 0.15
+sum(rate(etcd_http_failed_total[1m])) BY (method) / sum(rate(etcd_http_received_total[1m])) BY (method) > 0.01
+sum(rate(etcd_http_failed_total[1m])) BY (method) / sum(rate(etcd_http_received_total[1m])) BY (method) > 0.05
+histogram_quantile(0.99, rate(etcd_http_successful_duration_seconds_bucket[1m])) > 0.15
+histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket[1m])) > 0.15
+increase(etcd_server_proposals_failed_total[1h]) > 5
+histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket[1m])) > 0.5
+histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket[1m])) > 0.25
+thanos_compact_halted == 1
+rate(thanos_objstore_bucket_operation_failures_total[1m]) > 0
+(time() - thanos_objstore_bucket_last_successful_upload_time) > 24*60*60
+node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+rate(node_vmstat_pgmajfault[1m]) > 1000
+sum by (instance) (rate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100
+sum by (instance) (rate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100
+sum by (instance) (rate(node_disk_read_bytes_total[2m])) / 1024 / 1024 > 50
+sum by (instance) (rate(node_disk_written_bytes_total[2m])) / 1024 / 1024 > 50
+(node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 10 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+(node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 10 and ON (instance, device, mountpoint) predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs"}[1h], 24 * 3600) < 0 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+node_filesystem_files_free{mountpoint ="/rootfs"} / node_filesystem_files{mountpoint="/rootfs"} * 100 < 10 and ON (instance, device, mountpoint) node_filesystem_readonly{mountpoint="/rootfs"} == 0
+node_filesystem_files_free{mountpoint ="/rootfs"} / node_filesystem_files{mountpoint="/rootfs"} * 100 < 10 and predict_linear(node_filesystem_files_free{mountpoint="/rootfs"}[1h], 24 * 3600) < 0 and ON (instance, device, mountpoint) node_filesystem_readonly{mountpoint="/rootfs"} == 0
+rate(node_disk_read_time_seconds_total[1m]) / rate(node_disk_reads_completed_total[1m]) > 0.1 and rate(node_disk_reads_completed_total[1m]) > 0
+rate(node_disk_write_time_seconds_total[1m]) / rate(node_disk_writes_completed_total[1m]) > 0.1 and rate(node_disk_writes_completed_total[1m]) > 0
+100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+avg by(instance) (rate(node_cpu_seconds_total{mode="steal"}[5m])) * 100 > 10
+avg by (instance) (rate(node_cpu_seconds_total{mode="iowait"}[5m])) * 100 > 5
+(rate(node_context_switches_total[5m])) / (count without(cpu, mode) (node_cpu_seconds_total{mode="idle"})) > 1000
+(1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) * 100 > 80
+node_systemd_unit_state{state="failed"} == 1
+node_hwmon_temp_celsius > 75
+node_hwmon_temp_crit_alarm_celsius == 1
+node_md_state{state="inactive"} > 0
+node_md_disks{state="failed"} > 0
+count(sum(label_replace(node_uname_info, "kernel", "$1", "release", "([0-9]+.[0-9]+.[0-9]+).*")) by (kernel)) > 1
+increase(node_vmstat_oom_kill[1m]) > 0
+increase(node_edac_correctable_errors_total[1m]) > 0
+node_edac_uncorrectable_errors_total > 0
+rate(node_network_receive_errs_total[2m]) / rate(node_network_receive_packets_total[2m]) > 0.01
+rate(node_network_transmit_errs_total[2m]) / rate(node_network_transmit_packets_total[2m]) > 0.01
+(rate(node_network_receive_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m]) + rate(node_network_transmit_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m])) / node_network_speed_bytes{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"} > 0.8 < 10000
+(node_bonding_active - node_bonding_slaves) != 0
+node_nf_conntrack_entries / node_nf_conntrack_entries_limit > 0.8
+(node_timex_offset_seconds > 0.05 and deriv(node_timex_offset_seconds[5m]) >= 0) or (node_timex_offset_seconds < -0.05 and deriv(node_timex_offset_seconds[5m]) <= 0)
+min_over_time(node_timex_sync_status[1m]) == 0 and node_timex_maxerror_seconds >= 16
+node_reboot_required > 0
+sum(pulsar_subscription_back_log) by (subscription) > 5000
+sum(pulsar_subscription_back_log) by (subscription) > 100000
+sum(pulsar_storage_size > 5*1024*1024*1024) by (topic)
+sum(pulsar_storage_size > 20*1024*1024*1024) by (topic)
+sum(pulsar_storage_write_latency_overflow > 0) by (topic)
+sum(pulsar_entry_size_overflow > 0) by (topic)
+sum(bookie_ledger_dir__pulsar_data_bookkeeper_ledgers_usage) by (kubernetes_pod_name) > 75
+count(bookie_SERVER_STATUS{} == 0) by (pod)
+sum((rate(pulsar_function_user_exceptions_total{}[1m]) + rate(pulsar_function_system_exceptions_total{}[1m])) > 10) by (name)
+sum(rate(pulsar_sink_sink_exceptions_total{}[1m]) > 10) by (name)
+jenkins_node_offline_value > 1
+jenkins_health_check_score < 1
+sum(jenkins_plugins_withUpdate) by (instance) > 3
+default_jenkins_builds_health_score < 1
+delta(jenkins_runs_failure_total[1h]) > 100
+default_jenkins_builds_last_build_tests_failing > 0
+default_jenkins_builds_last_build_result_ordinal == 2
+pgbouncer_pools_server_active_connections > 200
+increase(pgbouncer_errors_count{errmsg!="server conn crashed?"}[1m]) > 10
+increase(pgbouncer_errors_count{errmsg="no more connections allowed (max_client_conn)"}[30s]) > 0
+kube_node_status_condition{condition="Ready",status="true"} == 0
+kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+kube_node_status_condition{condition="OutOfDisk",status="true"} == 1
+sum by (node) ((kube_pod_status_phase{phase="Running"} == 1) + on(uid) group_left(node) (0 * kube_pod_info{pod_template_hash=""})) / sum by (node) (kube_node_status_allocatable{resource="pods"}) * 100 > 90
+(kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1) and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
+kube_job_status_failed > 0
+kube_cronjob_spec_suspend != 0
+kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
+predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0
+kube_persistentvolume_status_phase{phase=~"Failed|Pending", job="kube-state-metrics"} > 0
+(kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
+kube_horizontalpodautoscaler_status_condition{status="false", condition="AbleToScale"} == 1
+kube_horizontalpodautoscaler_status_condition{status="false", condition="ScalingActive"} == 1
+kube_horizontalpodautoscaler_status_desired_replicas >= kube_horizontalpodautoscaler_spec_max_replicas
+min_over_time(sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"})[15m:1m]) > 0
+increase(kube_pod_container_status_restarts_total[1m]) > 3
+kube_replicaset_spec_replicas != kube_replicaset_status_ready_replicas
+kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+kube_statefulset_status_replicas_ready != kube_statefulset_status_replicas
+kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+kube_statefulset_status_observed_generation != kube_statefulset_metadata_generation
+max without (revision) (kube_statefulset_status_current_revision unless kube_statefulset_status_update_revision) * (kube_statefulset_replicas != kube_statefulset_status_replicas_updated)
+kube_daemonset_status_number_ready / kube_daemonset_status_desired_number_scheduled * 100 < 100 or kube_daemonset_status_desired_number_scheduled - kube_daemonset_status_current_number_scheduled > 0
+kube_daemonset_status_number_misscheduled > 0
+time() - kube_cronjob_next_schedule_time > 3600
+kube_job_spec_completions - kube_job_status_succeeded > 0
+sum(rate(apiserver_request_total{job="apiserver",code=~"^(?:5..)$"}[1m])) / sum(rate(apiserver_request_total{job="apiserver"}[1m])) * 100 > 3
+(sum(rate(rest_client_requests_total{code=~"(4|5).."}[1m])) by (instance, job) / sum(rate(rest_client_requests_total[1m])) by (instance, job)) * 100 > 1
+apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 7*24*60*60
+apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 24*60*60
+histogram_quantile(0.99, sum(rate(apiserver_request_latencies_bucket{subresource!="log",verb!~"^(?:CONNECT|WATCHLIST|WATCH|PROXY)$"} [10m])) WITHOUT (instance, resource)) / 1e+06 > 1
+increase(coredns_panics_total[1m]) > 0
+time() - container_last_seen > 60
+absent(container_last_seen)
+(sum(rate(container_cpu_usage_seconds_total{name!=""}[3m])) BY (instance, name) * 100) > 80
+(sum(container_memory_working_set_bytes{name!=""}) BY (instance, name) / sum(container_spec_memory_limit_bytes > 0) BY (instance, name) * 100) > 80
+(1 - (sum(container_fs_inodes_free{name!=""}) BY (instance) / sum(container_fs_inodes_total) BY (instance))) * 100 > 80
+rate(container_cpu_cfs_throttled_seconds_total[3m]) > 1
+windows_exporter_collector_success == 0
+windows_service_status{status="ok"} != 1
+100 - (avg by (instance) (rate(windows_cpu_time_total{mode="idle"}[2m])) * 100) > 80
+100 - ((windows_os_physical_memory_free_bytes / windows_cs_physical_memory_bytes) * 100) > 90
+100.0 - 100 * ((windows_logical_disk_free_bytes / 1024 / 1024 ) / (windows_logical_disk_size_bytes / 1024 / 1024)) > 80
+(elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"}) * 100 > 90
+(elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"}) * 100 > 80
+elasticsearch_filesystem_data_available_bytes / elasticsearch_filesystem_data_size_bytes * 100 < 10
+elasticsearch_filesystem_data_available_bytes / elasticsearch_filesystem_data_size_bytes * 100 < 20
+elasticsearch_cluster_health_status{color="red"} == 1
+elasticsearch_cluster_health_status{color="yellow"} == 1
+elasticsearch_cluster_health_number_of_nodes < 3
+elasticsearch_cluster_health_number_of_data_nodes < 3
+elasticsearch_cluster_health_relocating_shards > 0
+elasticsearch_cluster_health_relocating_shards > 0
+elasticsearch_cluster_health_initializing_shards > 0
+elasticsearch_cluster_health_initializing_shards > 0
+elasticsearch_cluster_health_unassigned_shards > 0
+elasticsearch_cluster_health_number_of_pending_tasks > 0
+increase(elasticsearch_indices_docs{es_data_node="true"}[10m]) < 1
+apache_up == 0
+(sum by (instance) (apache_workers{state="busy"}) / sum by (instance) (apache_scoreboard) ) * 100 > 80
+apache_uptime_seconds_total / 60 < 1
+count(traefik_backend_server_up) by (backend) == 0
+sum(rate(traefik_backend_requests_total{code=~"4.*"}[3m])) by (backend) / sum(rate(traefik_backend_requests_total[3m])) by (backend) * 100 > 5
+sum(rate(traefik_backend_requests_total{code=~"5.*"}[3m])) by (backend) / sum(rate(traefik_backend_requests_total[3m])) by (backend) * 100 > 5
+count(traefik_service_server_up) by (service) == 0
+sum(rate(traefik_service_requests_total{code=~"4.*"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+sum(rate(traefik_service_requests_total{code=~"5.*"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+haproxy_up == 0
+sum by (backend) (rate(haproxy_server_http_responses_total{code="4xx"}[1m])) / sum by (backend) (rate(haproxy_server_http_responses_total[1m]) * 100) > 5
+sum by (backend) (rate(haproxy_server_http_responses_total{code="5xx"}[1m])) / sum by (backend) (rate(haproxy_server_http_responses_total[1m]) * 100) > 5
+sum by (server) (rate(haproxy_server_http_responses_total{code="4xx"}[1m])) / sum by (server) (rate(haproxy_server_http_responses_total[1m]) * 100) > 5
+sum by (server) (rate(haproxy_server_http_responses_total{code="5xx"}[1m])) / sum by (server) (rate(haproxy_server_http_responses_total[1m]) * 100) > 5
+sum by (server) (rate(haproxy_server_response_errors_total[1m])) / sum by (server) (rate(haproxy_server_http_responses_total[1m]) * 100) > 5
+sum by (backend) (rate(haproxy_backend_connection_errors_total[1m])) > 100
+sum by (server) (rate(haproxy_server_connection_errors_total[1m])) > 100
+((sum by (backend) (avg_over_time(haproxy_backend_max_sessions[2m])) / sum by (backend) (avg_over_time(haproxy_backend_limit_sessions[2m]))) * 100) > 80
+sum by (backend) (haproxy_backend_current_queue) > 0
+avg by (backend) (haproxy_backend_http_total_time_average_seconds) > 1
+sum by (backend) (rate(haproxy_backend_retry_warnings_total[1m])) > 10
+haproxy_backend_up == 0
+haproxy_server_up == 0
+sum by (frontend) (rate(haproxy_frontend_requests_denied_total[2m])) > 10
+increase(haproxy_server_check_failures_total[1m]) > 0
+((sum by (proxy) (rate(haproxy_server_http_responses_total{code="4xx"}[1m])) / sum by (proxy) (rate(haproxy_server_http_responses_total[1m]))) * 100) > 5
+((sum by (proxy) (rate(haproxy_server_http_responses_total{code="5xx"}[1m])) / sum by (proxy) (rate(haproxy_server_http_responses_total[1m]))) * 100) > 5
+((sum by (server) (rate(haproxy_server_http_responses_total{code="4xx"}[1m])) / sum by (server) (rate(haproxy_server_http_responses_total[1m]))) * 100) > 5
+((sum by (server) (rate(haproxy_server_http_responses_total{code="5xx"}[1m])) / sum by (server) (rate(haproxy_server_http_responses_total[1m]))) * 100) > 5
+(sum by (server) (rate(haproxy_server_response_errors_total[1m])) / sum by (server) (rate(haproxy_server_http_responses_total[1m]))) * 100 > 5
+(sum by (proxy) (rate(haproxy_backend_connection_errors_total[1m]))) > 100
+(sum by (proxy) (rate(haproxy_server_connection_errors_total[1m]))) > 100
+((haproxy_server_max_sessions >0) * 100) / (haproxy_server_limit_sessions > 0) > 80
+sum by (proxy) (rate(haproxy_backend_current_queue[2m])) > 0
+avg by (instance, proxy) (haproxy_backend_max_total_time_seconds) > 1
+sum by (proxy) (rate(haproxy_backend_retry_warnings_total[1m])) > 10
+haproxy_backend_active_servers + haproxy_backend_backup_servers == 0
+sum by (proxy) (rate(haproxy_frontend_denied_connections_total[2m])) > 10
+increase(haproxy_server_check_failures_total[1m]) > 0
+vmware_vm_mem_usage_average / 100 >= 80 and vmware_vm_mem_usage_average / 100 < 90
+vmware_vm_mem_usage_average / 100 >= 90
+vmware_vm_snapshots > 3
+(time() - vmware_vm_snapshot_timestamp_seconds) / (60 * 60 * 24) >= 3
