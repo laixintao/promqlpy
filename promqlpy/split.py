@@ -6,13 +6,12 @@ from distutils.sysconfig import get_config_var
 
 here = Path(__file__).absolute().parent
 ext_suffix = get_config_var("EXT_SUFFIX")
-so_file = here / ("libpromql" + str(ext_suffix))
+so_file = str(here.parent / ("libpromql" + str(ext_suffix)))
 
 ffi = cffi.FFI()
 
 # Load library
 lib = ffi.dlopen(so_file)
-
 
 # Define the function prototypes
 ffi.cdef(
