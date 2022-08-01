@@ -22,7 +22,7 @@ class GoExtBuilder(build_ext):
         ext_path = self.get_ext_fullpath(ext.name)
         cmd = ["go", "build", "-buildmode=c-shared", "-o", ext_path]
         cmd += ext.sources
-        out = call(cmd, cwd="/workspace/go")
+        out = call(cmd, cwd="./go")
 
         if out != 0:
             raise CompileError("Go build failed")
