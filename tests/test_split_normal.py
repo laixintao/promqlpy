@@ -4,10 +4,10 @@ from promqlpy import split
 def test_simple_slit():
     assert split('sum(rate(foo{bar="baz"}[5m])) by (job) > 0') == {
         "code": 'sum(rate(foo{bar="baz"}[5m])) by (job) > 0',
-        "isComparison": True,
+        "is_binary_op": True,
         "left": {
             "code": 'sum(rate(foo{bar="baz"}[5m])) by (job)',
-            "isComparison": False,
+            "is_binary_op": False,
             "left": None,
             "op": "",
             "right": None,
@@ -15,7 +15,7 @@ def test_simple_slit():
         "op": ">",
         "right": {
             "code": "0",
-            "isComparison": False,
+            "is_binary_op": False,
             "left": None,
             "op": "",
             "right": None,

@@ -17,12 +17,11 @@ lib = ffi.dlopen(so_file)
 ffi.cdef(
     """
 
-struct split_return {
-    char* json_result;
-    char* err;
+struct SplitBinaryOp_return {
+    char* r0;
+    char* r1;
 };
-
-extern struct split_return split(char* code);
+extern struct SplitBinaryOp_return SplitBinaryOp(char* code);
 extern void FreeString(char* str);
 
 """
@@ -38,12 +37,12 @@ def split(code: str):
     split PromQL/MetricsQL alert rules into multiple expressions
     """
 
-    result = lib.split(code.encode())
-    json_result = ffi.string(result.json_result).decode()
-    err = ffi.string(result.err).decode()
+    result = lib.SplitBinaryOp(code.encode())
+    json_result = ffi.string(result.r0).decode()
+    err = ffi.string(result.r1).decode()
 
-    lib.FreeString(result.json_result)
-    lib.FreeString(result.err)
+    lib.FreeString(result.r0)
+    lib.FreeString(result.r1)
 
     if err:
         raise PromQLException(err)
