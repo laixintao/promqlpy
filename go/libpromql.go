@@ -9,10 +9,10 @@ import (
 // #include <stdlib.h>
 import "C"
 
-//export split
-func split(code *C.char) (*C.char, *C.char) {
+//export SplitBinaryOp
+func SplitBinaryOp(code *C.char) (*C.char, *C.char) {
 	codeGo := C.GoString(code)
-	result, err := promql.SplitRule(codeGo)
+	result, err := promql.SplitBinaryOp(codeGo)
 
 	if err != nil {
 		return C.CString(""), C.CString(err.Error())
