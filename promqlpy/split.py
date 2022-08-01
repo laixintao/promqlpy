@@ -33,8 +33,11 @@ def split(code: str):
     """
 
     result = lib.split(code.encode())
-    json_result = ffi.string(ffi.gc(result.json_result, lib.FreeString)).decode()
-    err = ffi.string(ffi.gc(result.err, lib.FreeString)).decode()
+    json_result = ffi.string(result.json_result).decode()
+    err = ffi.string(result.err).decode()
+
+    lib.FreeString(result.json_result)
+    lib.FreeString(result.err)
 
     if err:
         raise PromQLException(err)
