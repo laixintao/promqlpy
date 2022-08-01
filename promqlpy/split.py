@@ -17,6 +17,8 @@ struct split_return {
 };
 
 extern struct split_return split(char* code);
+extern void FreeString(char* str);
+
 """
 )
 
@@ -31,8 +33,8 @@ def split(code: str):
     """
 
     result = lib.split(code.encode())
-    json_result = ffi.string(result.json_result).decode()
-    err = ffi.string(result.err).decode()
+    json_result = ffi.string(ffi.gc(result.json_result, lib.FreeString)).decode()
+    err = ffi.string(ffi.gc(result.err, lib.FreeString)).decode()
 
     if err:
         raise PromQLException(err)
