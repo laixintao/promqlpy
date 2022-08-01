@@ -1,12 +1,16 @@
 package main
 
 import (
-	"C"
 	"fmt"
+	"unsafe"
 
 	"encoding/json"
 	"github.com/VictoriaMetrics/metricsql"
 )
+
+// #include <stdio.h>
+// #include <stdlib.h>
+import "C"
 
 type Expression struct {
 	Left  *Expression `json:"left"`
@@ -63,6 +67,11 @@ func split(code *C.char) (*C.char, *C.char) {
 		return C.CString(""), C.CString(err.Error())
 	}
 	return C.CString(result), C.CString("")
+}
+
+//export FreeString
+func FreeString(str *C.char) {
+	C.free(unsafe.Pointer(str))
 }
 
 func main() {
