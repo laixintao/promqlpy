@@ -6,7 +6,7 @@ from distutils.sysconfig import get_config_var
 
 here = Path(__file__).absolute().parent
 ext_suffix = get_config_var("EXT_SUFFIX")
-so_file = str(here.parent / ("libpromql" + str(ext_suffix)))
+so_file = str(here / ("_libpromql" + str(ext_suffix)))
 
 ffi = cffi.FFI()
 

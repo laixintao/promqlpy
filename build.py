@@ -6,7 +6,7 @@ from subprocess import call
 
 ext_modules = [
     Extension(
-        "libpromql",
+        "promqlpy._libpromql",
         include_dirs=["go/*"],
         sources=["libpromql.go"],
     ),
@@ -20,7 +20,6 @@ class BuildFailed(Exception):
 class GoExtBuilder(build_ext):
     def build_extension(self, ext):
         ext_path = self.get_ext_fullpath(ext.name)
-        print(ext_path)
         cmd = ["go", "build", "-buildmode=c-shared", "-o", ext_path]
         cmd += ext.sources
         out = call(cmd, cwd="/workspace/go")
