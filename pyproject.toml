@@ -13,7 +13,7 @@ cffi = "^1.15.1"
 PyYAML = "^6.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.0.0", "setuptools"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.cibuildwheel]
