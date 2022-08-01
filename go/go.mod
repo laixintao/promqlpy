@@ -1,4 +1,4 @@
-module github.com/laixintao/promqlpy
+module github.com/laixintao/promqlpy/go
 
 go 1.16
 
