@@ -18,14 +18,13 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.8.1 setuptools
 
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
-        # env:
-        #   CIBW_BUILD_FRONTEND: "build"
+      - name: install poetry
+        run: pip install -U pip poetry
+
+      - name: build
+        run: poetry build
 
       - uses: actions/upload-artifact@v3
         with:
-          path: ./wheelhouse/*.whl
+          path: ./dist/*
