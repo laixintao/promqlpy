@@ -15,3 +15,6 @@ PyYAML = "^6.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.cibuildwheel]
+build = "cp3{9,10,11}"
