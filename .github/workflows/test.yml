@@ -1,0 +1,73 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macOS-11]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Used to host cibuildwheel
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+
+      - name: install poetry
+        run: pip install -U pip poetry pytest
+
+      - name: build
+        run: poetry build
+
+      - name: install the built wheel
+        run: "pip install ./dist/*.whl"
+
+      - name: run tests
+        run: pytest tests
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./dist/*
+
+      - name: upload to pypi when pushed tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          poetry publish --username __token__ --password ${PASSWORD}
+    
+  lint:
+    name: flake8 & black
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: codespell-project/actions-codespell@master
+        with:
+          ignore_words_list: fo,ists,oll,optin,ot,smove,tre,whe
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+          architecture: "x64"
+      - name: Cache venv
+        uses: actions/cache@v2
+        with:
+          path: venv
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: lintenv-v2
+      - name: Install Dependencies
+        run: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install -U pip flake8 black
+      - name: Flake8 test
+        run: |
+          . venv/bin/activate
+          flake8 --exclude venv .
+      - name: Black test
+        run: |
+          . venv/bin/activate
+          black --check .
