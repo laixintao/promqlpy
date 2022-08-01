@@ -3,6 +3,7 @@ name = "promqlpy"
 version = "0.1.0"
 description = "Python utils for parsing PromQL/MetricsQL."
 authors = ["laixintao <laixintaoo@gmail.com>"]
+build = "build.py"
 
 [tool.poetry.dependencies]
 python = "^3.9"

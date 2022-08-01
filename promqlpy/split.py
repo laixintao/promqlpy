@@ -1,10 +1,17 @@
 import cffi
 import json
+from pathlib import Path
+from distutils.sysconfig import get_config_var
+
+
+here = Path(__file__).absolute().parent
+ext_suffix = get_config_var("EXT_SUFFIX")
+so_file = here / ("libpromql" + str(ext_suffix))
 
 ffi = cffi.FFI()
 
 # Load library
-lib = ffi.dlopen("./libpromql.so")
+lib = ffi.dlopen(so_file)
 
 
 # Define the function prototypes
