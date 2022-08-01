@@ -6,6 +6,7 @@ authors = ["laixintao <laixintaoo@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+cffi = "^1.15.1"
 
 [tool.poetry.dev-dependencies]
 PyYAML = "^6.0"
