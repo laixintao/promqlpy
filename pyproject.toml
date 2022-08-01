@@ -4,10 +4,7 @@ version = "0.1.0"
 description = "Python utils for parsing PromQL/MetricsQL."
 authors = ["laixintao <laixintaoo@gmail.com>"]
 build = "build.py"
-packages = [
-  { include = "promqlpy"},
-  { include = "go"},
-]
+include = ["go"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
