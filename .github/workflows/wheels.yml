@@ -19,10 +19,16 @@ jobs:
           python-version: 3.9
 
       - name: install poetry
-        run: pip install -U pip poetry
+        run: pip install -U pip poetry pytest
 
       - name: build
         run: poetry build
+
+      - name: install the built wheel
+        run: "pip install ./dist/*.whl"
+
+      - name: run tests
+        run: pytest tests
 
       - uses: actions/upload-artifact@v3
         with:
