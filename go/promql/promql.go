@@ -1,16 +1,11 @@
-package main
+package promql
 
 import (
 	"fmt"
-	"unsafe"
 
 	"encoding/json"
 	"github.com/VictoriaMetrics/metricsql"
 )
-
-// #include <stdio.h>
-// #include <stdlib.h>
-import "C"
 
 type Expression struct {
 	Left  *Expression `json:"left"`
@@ -51,31 +46,20 @@ func Expr2Json(tree *Expression) (string, error) {
 	return fmt.Sprintf("%s", result), nil
 }
 
-//export split
-func split(code *C.char) (*C.char, *C.char) {
-	codeGo := C.GoString(code)
-	expr, err := metricsql.Parse(codeGo)
+func SplitRule(code string) (string, error) {
+	expr, err := metricsql.Parse(code)
 
 	if err != nil {
-		return C.CString(""), C.CString(err.Error())
+		return "", err
 	}
 
 	node := parseExpr(expr)
 
 	result, err := Expr2Json(node)
+
 	if err != nil {
-		return C.CString(""), C.CString(err.Error())
+		return "", err
 	}
-	return C.CString(result), C.CString("")
-}
 
-//export FreeString
-func FreeString(str *C.char) {
-	C.free(unsafe.Pointer(str))
-}
-
-func main() {
-	code := `sum(rate(foo{bar="baz"}[5m])) by (job) > 0`
-	s, _ := split(C.CString(code))
-	fmt.Println(s)
+	return result, nil
 }
