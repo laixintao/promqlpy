@@ -1,6 +1,7 @@
 """
 usage:
-Change the ./dist to https://github.com/samber/awesome-prometheus-alerts location
+Change the ./dist to https://github.com/samber/awesome-prometheus-alerts
+location
 """
 import os
 import yaml

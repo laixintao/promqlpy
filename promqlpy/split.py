@@ -18,8 +18,8 @@ ffi.cdef(
     """
 
 struct split_return {
-	char* json_result;
-	char* err;
+    char* json_result;
+    char* err;
 };
 
 extern struct split_return split(char* code);
