@@ -19,6 +19,11 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 /* Start of preamble from import "C" comments.  */
 
 
+#line 11 "main.go"
+ #include <stdio.h>
+ #include <stdlib.h>
+
+#line 1 "cgo-generated-wrapper"
 
 
 /* End of preamble from import "C" comments.  */
@@ -75,6 +80,7 @@ struct split_return {
 	char* r1;
 };
 extern struct split_return split(char* code);
+extern void FreeString(char* str);
 
 #ifdef __cplusplus
 }
