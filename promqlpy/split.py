@@ -1,19 +1,25 @@
 import cffi
 import json
+from pathlib import Path
+from distutils.sysconfig import get_config_var
+
+
+here = Path(__file__).absolute().parent
+ext_suffix = get_config_var("EXT_SUFFIX")
+so_file = str(here / ("_libpromql" + str(ext_suffix)))
 
 ffi = cffi.FFI()
 
 # Load library
-lib = ffi.dlopen("./libpromql.so")
-
+lib = ffi.dlopen(so_file)
 
 # Define the function prototypes
 ffi.cdef(
     """
 
 struct split_return {
-	char* json_result;
-	char* err;
+    char* json_result;
+    char* err;
 };
 
 extern struct split_return split(char* code);
