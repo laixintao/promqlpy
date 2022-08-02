@@ -32,7 +32,7 @@ class PromQLException(Exception):
     ...
 
 
-def split(code: str):
+def split_binary_op(code: str):
     """
     split PromQL/MetricsQL alert rules into multiple expressions
     """

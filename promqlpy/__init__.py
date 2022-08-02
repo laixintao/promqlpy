@@ -1,3 +1,3 @@
-from .split import split
+from .split import split_binary_op
 
-__all__ = ["split"]
+__all__ = ["split_binary_op"]
