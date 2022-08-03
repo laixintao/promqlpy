@@ -2311,46 +2311,29 @@ def test_case_68():
     assert split_binary_op(
         '(count(redis_instance_info{role="master"}) or vector(0)) < 1'
     ) == {
-        "code": '(count(redis_instance_info{role="master"}) or vector(0)) < 1',
-        "group_modifier": {"args": None, "op": ""},
         "is_binary_op": True,
-        "join_modifier": {"args": None, "op": ""},
         "left": {
-            "code": 'count(redis_instance_info{role="master"}) or '
-            "vector(0)",
-            "group_modifier": {"args": None, "op": ""},
-            "is_binary_op": True,
-            "join_modifier": {"args": None, "op": ""},
-            "left": {
-                "code": 'count(redis_instance_info{role="master"})',
-                "group_modifier": {"args": None, "op": ""},
-                "is_binary_op": False,
-                "join_modifier": {"args": None, "op": ""},
-                "left": None,
-                "op": "",
-                "right": None,
-            },
-            "op": "or",
-            "right": {
-                "code": "vector(0)",
-                "group_modifier": {"args": None, "op": ""},
-                "is_binary_op": False,
-                "join_modifier": {"args": None, "op": ""},
-                "left": None,
-                "op": "",
-                "right": None,
-            },
+            "is_binary_op": False,
+            "left": None,
+            "right": None,
+            "op": "",
+            "group_modifier": {"op": "", "args": None},
+            "join_modifier": {"op": "", "args": None},
+            "code": 'count(redis_instance_info{role="master"}) or vector(0)',
+        },
+        "right": {
+            "is_binary_op": False,
+            "left": None,
+            "right": None,
+            "op": "",
+            "group_modifier": {"op": "", "args": None},
+            "join_modifier": {"op": "", "args": None},
+            "code": "1",
         },
         "op": "<",
-        "right": {
-            "code": "1",
-            "group_modifier": {"args": None, "op": ""},
-            "is_binary_op": False,
-            "join_modifier": {"args": None, "op": ""},
-            "left": None,
-            "op": "",
-            "right": None,
-        },
+        "group_modifier": {"op": "", "args": None},
+        "join_modifier": {"op": "", "args": None},
+        "code": '(count(redis_instance_info{role="master"}) or vector(0)) < 1',
     }
 
 

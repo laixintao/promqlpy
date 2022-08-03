@@ -39,23 +39,36 @@ var compareOps = map[string]bool{
 	"<":  true,
 	">=": true,
 	"<=": true,
+}
 
-	// logical set ops
+var logicalOps = map[string]bool{
 	"and":    true,
 	"or":     true,
 	"unless": true,
 }
 
-func parseExpr(expr metricsql.Expr) *Expression {
+// if `mustBeExpression` is true, means that the last level is compareOps
+// or ready.
+// example:
+// (a > 10) > b
+// result: a > 10 is expression, compare to b
+func parseExpr(expr metricsql.Expr, mustBeExpression bool) *Expression {
+
+    // I am sure it is a normal expression!
+	if mustBeExpression {
+		return &Expression{
+			Code:       string(expr.AppendString(nil)),
+			IsBinaryOp: false,
+		}
+	}
 
 	if bop, ok := expr.(*metricsql.BinaryOpExpr); ok {
 
-		// treat +,-,* etc still as normal expression
-		if compareOps[bop.Op] {
+		if logicalOps[bop.Op] {
 
 			return &Expression{
-				Left:          parseExpr(bop.Left),
-				Right:         parseExpr(bop.Right),
+				Left:          parseExpr(bop.Left, false),
+				Right:         parseExpr(bop.Right, false),
 				GroupModifier: ModifierExpr(bop.GroupModifier),
 				JoinModifier:  ModifierExpr(bop.JoinModifier),
 				Op:            bop.Op,
@@ -63,8 +76,22 @@ func parseExpr(expr metricsql.Expr) *Expression {
 				IsBinaryOp:    true,
 			}
 		}
+
+		if compareOps[bop.Op] {
+			return &Expression{
+				Left:          parseExpr(bop.Left, true),
+				Right:         parseExpr(bop.Right, true),
+				GroupModifier: ModifierExpr(bop.GroupModifier),
+				JoinModifier:  ModifierExpr(bop.JoinModifier),
+				Op:            bop.Op,
+				Code:          string(bop.AppendString(nil)),
+				IsBinaryOp:    true,
+			}
+
+		}
 	}
 
+	// treat +,-,* etc still as normal expression
 	// default: just return the literal code as it is
 	return &Expression{
 		Code:       string(expr.AppendString(nil)),
@@ -87,7 +114,7 @@ func SplitBinaryOp(code string) (string, error) {
 		return "", err
 	}
 
-	node := parseExpr(expr)
+	node := parseExpr(expr, false)
 
 	result, err := Expr2Json(node)
 
