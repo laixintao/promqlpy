@@ -7,33 +7,67 @@ import (
 	"github.com/VictoriaMetrics/metricsql"
 )
 
+// ModifierExpr represents MetricsQL modifier such as `<op> (...)`
+type ModifierExpr struct {
+	// Op is modifier operation.
+	Op string `json:"op"`
+
+	// Args contains modifier args from parens.
+	Args []string `json:"args"`
+}
+
 type Expression struct {
+	// if true, all fields are set
+	// if false, then it's a normal expression, only `code` is set
+	IsBinaryOp bool `json:"is_binary_op"`
+
 	Left  *Expression `json:"left"`
 	Right *Expression `json:"right"`
 	Op    string      `json:"op"`
+	// GroupModifier contains modifier such as "on" or "ignoring".
+	GroupModifier ModifierExpr `json:"group_modifier"`
+	// JoinModifier contains modifier such as "group_left" or "group_right".
+	JoinModifier ModifierExpr `json:"join_modifier"`
 
 	Code string `json:"code"`
+}
 
-	// if true, left,right,op is set
-	// if false, then only code is set
-	IsBinaryOp bool `json:"is_binary_op"`
+var compareOps = map[string]bool{
+	"==": true,
+	"!=": true,
+	">":  true,
+	"<":  true,
+	">=": true,
+	"<=": true,
+
+	// logical set ops
+	"and":    true,
+	"or":     true,
+	"unless": true,
 }
 
 func parseExpr(expr metricsql.Expr) *Expression {
 
 	if bop, ok := expr.(*metricsql.BinaryOpExpr); ok {
-		return &Expression{
-			Left:         parseExpr(bop.Left),
-			Right:        parseExpr(bop.Right),
-			Op:           bop.Op,
-			Code:         string(bop.AppendString(nil)),
-			IsBinaryOp: true,
+
+		// treat +,-,* etc still as normal expression
+		if compareOps[bop.Op] {
+
+			return &Expression{
+				Left:          parseExpr(bop.Left),
+				Right:         parseExpr(bop.Right),
+				GroupModifier: ModifierExpr(bop.GroupModifier),
+				JoinModifier:  ModifierExpr(bop.JoinModifier),
+				Op:            bop.Op,
+				Code:          string(bop.AppendString(nil)),
+				IsBinaryOp:    true,
+			}
 		}
 	}
 
 	// default: just return the literal code as it is
 	return &Expression{
-		Code:         string(expr.AppendString(nil)),
+		Code:       string(expr.AppendString(nil)),
 		IsBinaryOp: false,
 	}
 }
