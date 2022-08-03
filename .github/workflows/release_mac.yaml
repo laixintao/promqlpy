@@ -5,12 +5,12 @@ on:
     tags:
       - v*
 jobs:
-  release-pypi:
+  release-pypi-mac:
     name: Build wheels and tests on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [macOS-11]
 
     steps:
       - uses: actions/checkout@v3
@@ -34,7 +34,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          path: ./dist/*
+          path: "./dist/*.whl"
 
       - name: upload to pypi when pushed tag
         env:
