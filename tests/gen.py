@@ -1,6 +1,6 @@
 """
 usage:
-python tests/gen.py tests/data/awesome_prometheus_alerts.txt tests/test_awesome_rules.py 
+python tests/gen.py tests/data/awesome_prometheus_alerts.txt tests/test_awesome_rules.py
 args: source rule file (one at a line) generate_target.py
 """
 import sys
