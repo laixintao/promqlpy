@@ -20,7 +20,8 @@ Current features:
 ### Use it from Command Line
 
 After installation, there will be a `alert-rule-explain` command available in
-your shell. Just pipe your Promql/MetricsQL query into this command line, you will see something like this:
+your shell. Just pipe your Promql/MetricsQL query into this command line, you
+will see something like this:
 
 ![](./imgs/rule2.png)
 
