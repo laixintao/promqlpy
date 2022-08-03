@@ -37,5 +37,7 @@ jobs:
           path: ./dist/*
 
       - name: upload to pypi when pushed tag
+        env:
+          PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
-          poetry publish --username __token__ --password ${PYPI_TOKEN}
+          poetry publish --username __token__ --password ${PASSWORD}
