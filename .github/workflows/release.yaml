@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  release-pypi:
+    name: Build wheels and tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macOS-11]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Used to host cibuildwheel
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+
+      - name: install poetry
+        run: pip install -U pip poetry pytest
+
+      - name: build
+        run: poetry build
+
+      - name: install the built wheel
+        run: "pip install ./dist/*.whl"
+
+      - name: run tests
+        run: pytest tests
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./dist/*
+
+      - name: upload to pypi when pushed tag
+        run: |
+          poetry publish --username __token__ --password ${PYPI_TOKEN}
