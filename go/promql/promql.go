@@ -16,7 +16,7 @@ type Expression struct {
 
 	// if true, left,right,op is set
 	// if false, then only code is set
-	IsComparison bool `json:"isComparison"`
+	IsBinaryOp bool `json:"is_binary_op"`
 }
 
 func parseExpr(expr metricsql.Expr) *Expression {
@@ -27,14 +27,14 @@ func parseExpr(expr metricsql.Expr) *Expression {
 			Right:        parseExpr(bop.Right),
 			Op:           bop.Op,
 			Code:         string(bop.AppendString(nil)),
-			IsComparison: true,
+			IsBinaryOp: true,
 		}
 	}
 
 	// default: just return the literal code as it is
 	return &Expression{
 		Code:         string(expr.AppendString(nil)),
-		IsComparison: false,
+		IsBinaryOp: false,
 	}
 }
 
@@ -46,7 +46,7 @@ func Expr2Json(tree *Expression) (string, error) {
 	return fmt.Sprintf("%s", result), nil
 }
 
-func SplitRule(code string) (string, error) {
+func SplitBinaryOp(code string) (string, error) {
 	expr, err := metricsql.Parse(code)
 
 	if err != nil {
