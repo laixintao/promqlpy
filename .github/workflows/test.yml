@@ -43,7 +43,7 @@ jobs:
       - name: upload to pypi when pushed tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          poetry publish --username __token__ --password ${PASSWORD}
+          poetry publish --username __token__ --password ${PYPI_TOKEN}
 
   lint:
     name: flake8 & black
