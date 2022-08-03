@@ -54,9 +54,9 @@ in Json format, with those values:
     regular expression, not possible to be another Binary Op Expression):
     - == (equal)
     - != (not-equal)
-    - > (greater-than)
+    - `>` (greater-than)
     - < (less-than)
-    - > = (greater-or-equal)
+    - `>=` (greater-or-equal)
     - <= (less-or-equal)
   - Logic(When `op` is one of Logic, `left` and `right` cloud be Binary Op
     Expression or Regular Expression, the Json is nested):
