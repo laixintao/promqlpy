@@ -132,3 +132,33 @@ def test_logic_priority():
         "join_modifier": {"op": "", "args": None},
         "code": "(a and b) or c",
     }
+
+
+def test_multi_comapre_op():
+    code = "a > 10 < b"
+    result = split_binary_op(code)
+    assert result == {
+        "is_binary_op": True,
+        "left": {
+            "is_binary_op": False,
+            "left": None,
+            "right": None,
+            "op": "",
+            "group_modifier": {"op": "", "args": None},
+            "join_modifier": {"op": "", "args": None},
+            "code": "a > 10",
+        },
+        "right": {
+            "is_binary_op": False,
+            "left": None,
+            "right": None,
+            "op": "",
+            "group_modifier": {"op": "", "args": None},
+            "join_modifier": {"op": "", "args": None},
+            "code": "b",
+        },
+        "op": "<",
+        "group_modifier": {"op": "", "args": None},
+        "join_modifier": {"op": "", "args": None},
+        "code": "(a > 10) < b",
+    }
