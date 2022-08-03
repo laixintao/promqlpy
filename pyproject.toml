@@ -9,6 +9,7 @@ include = ["go"]
 [tool.poetry.dependencies]
 python = "^3.9"
 cffi = "^1.15.1"
+rich = "^12.5.1"
 
 [tool.poetry.dev-dependencies]
 PyYAML = "^6.0"
@@ -21,3 +22,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 79
+
+[tool.poetry.scripts]
+alert-rule-explain = 'promqlpy.cli:main'

@@ -13492,3 +13492,57 @@ def test_case_412():
             "right": None,
         },
     }
+
+
+def test_case_284():
+    assert split_binary_op(
+        '(rate(node_network_receive_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m]) + rate(node_network_transmit_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m])) / node_network_speed_bytes{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"} > 0.8 < 10000'
+    ) == {
+        "code": '(((rate(node_network_receive_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m]) '
+        "+ "
+        'rate(node_network_transmit_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m])) '
+        "/ "
+        'node_network_speed_bytes{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}) '
+        "> 0.8) < 10000",
+        "group_modifier": {"args": None, "op": ""},
+        "is_binary_op": True,
+        "join_modifier": {"args": None, "op": ""},
+        "left": {
+            "code": '((rate(node_network_receive_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m]) '
+            "+ "
+            'rate(node_network_transmit_bytes_total{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}[1m])) '
+            "/ "
+            'node_network_speed_bytes{device!~"^tap.*|^vnet.*|^veth.*|^tun.*"}) '
+            "> 0.8",
+            "group_modifier": {"args": None, "op": ""},
+            "is_binary_op": False,
+            "join_modifier": {"args": None, "op": ""},
+            "left": None,
+            "op": "",
+            "right": None,
+        },
+        "op": "<",
+        "right": {
+            "code": "10000",
+            "group_modifier": {"args": None, "op": ""},
+            "is_binary_op": False,
+            "join_modifier": {"args": None, "op": ""},
+            "left": None,
+            "op": "",
+            "right": None,
+        },
+    }
+
+
+def test_case_293():
+    assert split_binary_op(
+        "sum(pulsar_storage_size > 20*1024*1024*1024) by (topic)"
+    ) == {
+        "code": "sum(pulsar_storage_size > 2.147483648e+10) by (topic)",
+        "group_modifier": {"args": None, "op": ""},
+        "is_binary_op": False,
+        "join_modifier": {"args": None, "op": ""},
+        "left": None,
+        "op": "",
+        "right": None,
+    }

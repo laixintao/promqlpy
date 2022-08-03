@@ -17,7 +17,17 @@ $ pip install promqlpy
 
 Current features:
 
-### Split Alert Rules
+### Use it from Command Line
+
+After installation, there will be a `alert-rule-explain` command available in
+your shell. Just pipe your Promql/MetricsQL query into this command line, you
+will see something like this:
+
+![](./imgs/rule2.png)
+
+![](./imgs/rule3.png)
+
+### Use it as a Library to Split Alert Rules
 
 Using `split_binary_op` function, we can split an
 [Alert Rule](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/)
