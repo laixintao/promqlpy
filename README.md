@@ -1,5 +1,7 @@
 # promqlpy
 
+[![Build](https://github.com/laixintao/promqlpy/actions/workflows/wheels.yml/badge.svg)](https://github.com/laixintao/promqlpy/actions/workflows/wheels.yml)
+
 Promqlpy is a python library for parsing PromQL/MetricsQL.
 
 ## Install
