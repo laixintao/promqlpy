@@ -19,21 +19,40 @@ type Expression struct {
 	IsBinaryOp bool `json:"is_binary_op"`
 }
 
+var compareOps = map[string]bool{
+	"==": true,
+	"!=": true,
+	">":  true,
+	"<":  true,
+	">=": true,
+	"<=": true,
+
+	// logical set ops
+	"and":    true,
+	"or":     true,
+	"unless": true,
+}
+
 func parseExpr(expr metricsql.Expr) *Expression {
 
 	if bop, ok := expr.(*metricsql.BinaryOpExpr); ok {
-		return &Expression{
-			Left:         parseExpr(bop.Left),
-			Right:        parseExpr(bop.Right),
-			Op:           bop.Op,
-			Code:         string(bop.AppendString(nil)),
-			IsBinaryOp: true,
+
+        // treat +,-,* etc still as normal expression
+		if compareOps[bop.Op] {
+
+			return &Expression{
+				Left:       parseExpr(bop.Left),
+				Right:      parseExpr(bop.Right),
+				Op:         bop.Op,
+				Code:       string(bop.AppendString(nil)),
+				IsBinaryOp: true,
+			}
 		}
 	}
 
 	// default: just return the literal code as it is
 	return &Expression{
-		Code:         string(expr.AppendString(nil)),
+		Code:       string(expr.AppendString(nil)),
 		IsBinaryOp: false,
 	}
 }
